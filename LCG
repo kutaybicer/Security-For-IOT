@@ -1,0 +1,49 @@
+#The code is prepared using python software language and using visual studio code IDE.
+import matplotlib.pyplot as plt
+from collections import Counter
+
+#Defining required parameters
+a  = 1291
+c  = 4621
+m  = 21870
+y = range(21870) #Defining the y-axis for scatter drawing
+
+#Implementation of the LCG algorithm according to the seed value sent from main function
+def generate(x0):
+    x = []
+    for i in range (m):
+        k = ((x0*a)+c) % m
+        x0 = k
+        x.append(k)
+    return x
+
+#Finding the repetition rate of generated random numbers
+#In the Main function, how many of each number in the array is found with the Counter function.
+#The result is sent to this function. The c[] array holds how many of which numbers are in it.
+#If this value is more than 1, the counter is incremented.
+def period(x):
+    cnt = 0
+    for i in range(len(c)):
+        if c[i] > 1:
+            cnt = cnt +1
+    return cnt
+
+
+if __name__ == "__main__":
+    result = []
+    #The numbers were generated with the seed value of 4757 and assigned to the result value.
+    result = generate(4757)
+
+    #The Counter function, which is also used in the Period function, is processed here.
+    #The Counter function finds how many times the elements in an array occur in the array.
+    c = Counter(result)
+    print(c)
+    
+    #The period function is called.
+    periodResult = period(c)
+    print("Repeated number count is : ",periodResult)
+
+    #A scatter drawing has been prepared to visually see the randomness of the numbers.
+    plt.scatter(result,y, s = 1)
+    plt.show()
+
