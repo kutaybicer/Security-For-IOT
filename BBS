@@ -1,0 +1,59 @@
+#The code is prepared using python software language and using visual studio code IDE.
+import matplotlib.pyplot as plt
+from collections import Counter
+from scipy import special
+import math 
+
+#Defining required parameters
+p = 243
+q = 247
+s = 250
+m = 128
+n = p * q
+
+#Implementation of BBS algorithm according to defined parameters.
+def generate():
+    x = []
+    x0 = (s**2) % n
+    for i in range (m):
+        y = (x0**2) % n
+        x0 = y
+        x.append (y%2)
+    return x
+
+#Implementation of the run test
+def run(x):
+    cnt  = 0
+    cnt2 = 0
+    #Incrementing the counter by 1 for each changing bit in the array.
+    for i in range (1,len(x)):
+        if x[i-1] == 0 and x[i] == 1:
+            cnt = cnt +1
+        elif x[i-1] == 1 and x[i] == 0:
+            cnt2 = cnt2 + 1
+    return cnt2 + cnt
+
+
+if __name__ == "__main__":
+    result = []
+    result = generate()
+    print(result)
+    #Finding how many 0s and how many 1s the generated bits consist of
+    c = Counter(result)
+    print(c)
+
+    #Application of frequency test and finding P value
+    sn = (c[1]-c[0])/math.sqrt(m)
+    p = special.erfc(sn/math.sqrt(2))
+    print("P value is :",p)
+
+    #Finding the P value according to the results of the run test
+    b = run(result)
+    print("Run counter is:",b)
+    pi = c[1]/(c[1]+c[0])
+    prun = special.erfc((b-(2*m*pi*(1-(pi)))) / (2*math.sqrt(2*m)*(pi)*(1-(pi))))
+    print("P run is : ",prun)
+
+    #Visual display of generated bits
+    plt.hist(result, bins = 3, edgecolor='black')
+    plt.show()
