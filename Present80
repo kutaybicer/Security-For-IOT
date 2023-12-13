@@ -1,0 +1,94 @@
+#The code is written in python language and visual studio code is used as compiler.#Anaconda 3.9.7 is used as the version.
+#No value is requested from the user in the code. Plaintext and key values are predefined.
+#Both algorithms use numpy and time libraries. If these libraries are not downloaded, the code may fail.
+#As long as the libraries are downloaded, it is suitable to run with any compiler.
+
+import numpy as np
+import time
+
+# Assigning a timer to achieve code speed.
+start = time.time()
+
+s_box = [0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd, 0x3, 0xe, 0xf, 0x8, 0x4, 0x7, 0x1, 0x2]
+
+p_box = [0, 16, 32, 48, 1, 17, 33, 49, 2, 18, 34, 50, 3, 19, 35, 51,
+         4, 20, 36, 52, 5, 21, 37, 53, 6, 22, 38, 54, 7, 23, 39, 55,
+         8, 24, 40, 56, 9, 25, 41, 57, 10, 26, 42, 58, 11, 27, 43, 59,
+        12, 28, 44, 60, 13, 29, 45, 61, 14, 30, 46, 62, 15, 31, 47, 63]
+
+plaintext = 0xffffffffffffffff
+key = 0x00000000000000000000
+
+#Masks defined to be used in the roundkeys function because bitwise processing is done.
+mask_size19 = 2 ** 19 - 1
+mask_size76 = 2 ** 76 - 1
+
+#The numpy function used to see the result values in hexadecimal
+to_hex = np.vectorize(hex)
+
+#XOR operation written for key and plaintex
+def round_key(text,keyy):
+    return text ^ keyy
+
+#Inserting plaintext values into s_box.
+def sub(text):
+    copytext = 0
+
+    for i in range(16):
+        index = s_box[(text >> (i*4)) & 0xf] 
+        copytext += index << (i*4) 
+
+    return copytext
+#Operation of changing index values of plaintext according to p_layer
+def player(text):
+    copytext = 0
+
+    for i in range (64):
+        index = ((text >> i) & 0x01)
+        copytext += index << p_box[i]
+
+    return copytext
+
+#Function used to create key
+def roundkeys(key, rounds):
+    
+    roundkeys = [] #Storage for keys
+    for i in range(1, rounds + 1):  
+        roundkeys.append(key >> 16) #Getting the key
+        #Shifting operation
+        shiftkey = (key & mask_size19) << 61  
+        key19 = key >> 19
+        key = shiftkey + key19
+        #Left most 4 bits goes to the s_box
+        sub = s_box[key >> 76] << 76
+        key76 = (key & mask_size76)
+        key = sub + key76
+
+        #XOR operation with round count
+        key ^= i << 15
+        
+    return roundkeys
+
+if __name__== '__main__':
+    #first round
+    a1 = round_key(plaintext,key)
+    a2 = sub(a1)
+    a3 = player(a2)
+    #creating keys
+    newkeys = roundkeys(key,32)
+    #30 rounds loop
+    for i in range (30):
+        a1 = round_key(a3,newkeys[i+1])
+        a2 = sub(a1)
+        a3 = player(a2)
+
+    #last round
+    a4 = round_key(a3, newkeys[31])
+
+    print("Cipher Text:")
+    print(to_hex(a4))
+
+    #Execution speed calculated
+    end = time.time()
+    #Printing execution speed
+    print(f"Runtime of the program is {end - start}")
